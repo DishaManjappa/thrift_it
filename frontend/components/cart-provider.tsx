@@ -21,7 +21,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setItems(readJson<CartItem[]>(storageKeys.cart, []));
+    const saved = readJson<CartItem[]>(storageKeys.cart, []);
+    const uniqueItems = Array.from(new Map(saved.map((item) => [item.id, { ...item, quantity: 1 }])).values());
+    setItems(uniqueItems);
     setHydrated(true);
   }, []);
 
@@ -34,7 +36,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((current) => {
       const found = current.find((item) => item.id === product.id);
       if (found) {
-        return current.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
+        return current;
       }
       return [...current, { ...product, quantity: 1 }];
     });

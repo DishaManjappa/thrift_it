@@ -10,7 +10,7 @@ export function Header() {
   const { items } = useCart();
   const [loggedIn, setLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
-  const count = items.reduce((sum, item) => sum + item.quantity, 0);
+  const count = items.length;
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());

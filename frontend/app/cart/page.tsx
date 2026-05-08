@@ -66,7 +66,7 @@ export default function CartPage() {
               <div className="flex flex-1 flex-col justify-between">
                 <div>
                   <h2 className="font-black">{item.title}</h2>
-                  <p className="font-semibold text-ink/55">Qty {item.quantity}</p>
+                  <p className="font-semibold text-ink/55">One-of-one thrift item</p>
                 </div>
                 <p className="font-black">${item.price * item.quantity}</p>
               </div>

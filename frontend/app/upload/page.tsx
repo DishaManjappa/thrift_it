@@ -10,6 +10,33 @@ import { AuthGuard } from "@/components/auth-guard";
 const steps = ["Vision Agent Running...", "Listing Agent Generating...", "Pricing Agent Calculating..."];
 const uploadedPlaceholder = "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80";
 
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const maxSize = 900;
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          resolve(String(reader.result));
+          return;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
+      };
+      image.onerror = () => resolve(String(reader.result));
+      image.src = String(reader.result);
+    };
+    reader.onerror = () => resolve(uploadedPlaceholder);
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -21,9 +48,7 @@ export default function UploadPage() {
   const handleFile = (chosen?: File) => {
     if (!chosen) return;
     setFile(chosen);
-    const reader = new FileReader();
-    reader.onload = () => setPreview(String(reader.result));
-    reader.readAsDataURL(chosen);
+    compressImage(chosen).then(setPreview);
   };
 
   const priceNumber = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 25;
@@ -43,7 +68,7 @@ export default function UploadPage() {
       price: priceNumber(result.suggestedPrice),
       condition: result.condition,
       tags: result.tags,
-      image: uploadedPlaceholder,
+      image: preview || uploadedPlaceholder,
       height: "medium" as const,
       source: "upload" as const
     };

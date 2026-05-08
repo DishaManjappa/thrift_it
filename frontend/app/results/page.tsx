@@ -36,7 +36,7 @@ export default function ResultsPage() {
           source: "upload"
         };
 
-    saveUploadedListing({ ...listing, image: listing.image.startsWith("data:") ? uploadedPlaceholder : listing.image });
+    saveUploadedListing({ ...listing, image: listing.image || uploadedPlaceholder });
     sessionStorage.removeItem("thriftit-pending-listing");
     window.location.href = "/marketplace";
   };

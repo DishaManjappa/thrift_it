@@ -1,6 +1,7 @@
 import { Product } from "@/lib/types";
 
 const uploadedPlaceholder = "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80";
+const maxStoredImageLength = 1_200_000;
 
 export type Order = {
   id: string;
@@ -48,11 +49,11 @@ export function readUploadedListings() {
 export function saveUploadedListing(product: Product) {
   const cleanProduct = {
     ...product,
-    image: product.image?.startsWith("data:") ? uploadedPlaceholder : product.image
+    image: product.image?.startsWith("data:") && product.image.length > maxStoredImageLength ? uploadedPlaceholder : product.image
   };
   const current = readUploadedListings().map((item) => ({
     ...item,
-    image: item.image?.startsWith("data:") ? uploadedPlaceholder : item.image
+    image: item.image?.startsWith("data:") && item.image.length > maxStoredImageLength ? uploadedPlaceholder : item.image
   }));
   writeJson(storageKeys.uploads, [cleanProduct, ...current]);
 }
