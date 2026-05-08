@@ -1,5 +1,7 @@
 import { Product } from "@/lib/types";
 
+const uploadedPlaceholder = "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80";
+
 export type Order = {
   id: string;
   item: string;
@@ -44,8 +46,15 @@ export function readUploadedListings() {
 }
 
 export function saveUploadedListing(product: Product) {
-  const current = readUploadedListings();
-  writeJson(storageKeys.uploads, [product, ...current]);
+  const cleanProduct = {
+    ...product,
+    image: product.image?.startsWith("data:") ? uploadedPlaceholder : product.image
+  };
+  const current = readUploadedListings().map((item) => ({
+    ...item,
+    image: item.image?.startsWith("data:") ? uploadedPlaceholder : item.image
+  }));
+  writeJson(storageKeys.uploads, [cleanProduct, ...current]);
 }
 
 export function isLoggedIn() {

@@ -6,6 +6,9 @@ import { AiResult } from "@/lib/types";
 import { aiFallback } from "@/lib/demo-data";
 import { Button } from "@/components/ui/button";
 import { saveUploadedListing } from "@/lib/storage";
+import { Product } from "@/lib/types";
+
+const uploadedPlaceholder = "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80";
 
 export default function ResultsPage() {
   const [result, setResult] = useState<AiResult | null>(null);
@@ -15,12 +18,26 @@ export default function ResultsPage() {
     setResult(saved ? JSON.parse(saved) : { imageUrl: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80", ...aiFallback });
   }, []);
 
+  const priceNumber = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 25;
+
   const publishListing = () => {
+    if (!result) return;
     const saved = sessionStorage.getItem("thriftit-pending-listing");
-    if (saved) {
-      saveUploadedListing(JSON.parse(saved));
-      sessionStorage.removeItem("thriftit-pending-listing");
-    }
+    const listing: Product = saved
+      ? JSON.parse(saved)
+      : {
+          id: `upload-${Date.now()}`,
+          title: result.title,
+          price: priceNumber(result.suggestedPrice),
+          condition: result.condition,
+          tags: result.tags,
+          image: uploadedPlaceholder,
+          height: "medium",
+          source: "upload"
+        };
+
+    saveUploadedListing({ ...listing, image: listing.image.startsWith("data:") ? uploadedPlaceholder : listing.image });
+    sessionStorage.removeItem("thriftit-pending-listing");
     window.location.href = "/marketplace";
   };
 

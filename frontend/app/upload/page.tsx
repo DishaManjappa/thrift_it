@@ -8,6 +8,7 @@ import { analyzeUpload } from "@/lib/api";
 import { AuthGuard } from "@/components/auth-guard";
 
 const steps = ["Vision Agent Running...", "Listing Agent Generating...", "Pricing Agent Calculating..."];
+const uploadedPlaceholder = "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80";
 
 export default function UploadPage() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +43,7 @@ export default function UploadPage() {
       price: priceNumber(result.suggestedPrice),
       condition: result.condition,
       tags: result.tags,
-      image: preview || result.imageUrl,
+      image: uploadedPlaceholder,
       height: "medium" as const,
       source: "upload" as const
     };

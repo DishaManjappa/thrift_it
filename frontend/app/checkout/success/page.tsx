@@ -11,8 +11,13 @@ export default function CheckoutSuccessPage() {
   const [orderId, setOrderId] = useState("");
 
   useEffect(() => {
+    writeJson(storageKeys.cart, []);
+    clearCart();
+
     const pending = readJson<{ items: { id: string; title: string; quantity: number }[]; total: number } | null>(storageKeys.pendingCheckout, null);
-    if (!pending || pending.items.length === 0) return;
+    if (!pending || pending.items.length === 0) {
+      return;
+    }
 
     const id = `ORD-${Date.now().toString().slice(-6)}`;
     const paidOrder: Order = {
@@ -27,9 +32,7 @@ export default function CheckoutSuccessPage() {
     const newSoldIds = pending.items.map((item) => item.id);
     writeJson(storageKeys.orders, [paidOrder, ...current]);
     writeJson(storageKeys.sold, Array.from(new Set([...soldIds, ...newSoldIds])));
-    writeJson(storageKeys.cart, []);
     window.localStorage.removeItem(storageKeys.pendingCheckout);
-    clearCart();
     setOrderId(id);
   }, [clearCart]);
 
