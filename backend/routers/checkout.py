@@ -1,0 +1,14 @@
+from fastapi import APIRouter, HTTPException
+
+from backend.models.schemas import CheckoutRequest
+from backend.services.stripe_service import create_checkout_session
+
+router = APIRouter(tags=["Checkout"])
+
+
+@router.post("/create-checkout-session")
+async def create_checkout_session_route(payload: CheckoutRequest):
+    try:
+        return create_checkout_session(payload.items)
+    except Exception as error:
+        raise HTTPException(status_code=400, detail=f"Stripe checkout failed: {error}") from error
