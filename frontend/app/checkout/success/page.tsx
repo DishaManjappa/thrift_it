@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useCart } from "@/components/cart-provider";
 import { Order, readJson, storageKeys, writeJson } from "@/lib/storage";
 
@@ -44,9 +43,9 @@ export default function CheckoutSuccessPage() {
         <p className="mt-3 font-semibold leading-7 text-ink/65">
           Your order {orderId ? `${orderId} ` : ""}is saved in Orders with a paid status.
         </p>
-        <Button href="/orders" className="mt-6">
+        <button onClick={() => (window.location.href = "/orders")} className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-bold text-linen shadow-soft transition hover:-translate-y-0.5">
           View orders
-        </Button>
+        </button>
       </section>
     </main>
   );
