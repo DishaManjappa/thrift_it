@@ -11,18 +11,20 @@ def _stripe_secret_key() -> str:
     return key
 
 
-def create_checkout_session(items: list[CheckoutItem]) -> dict:
+def create_checkout_session(items: list[CheckoutItem], frontend_origin: str | None = None) -> dict:
     secret_key = _stripe_secret_key()
+    frontend_url = (frontend_origin or settings.frontend_url).rstrip("/")
+
     if not secret_key or "your_stripe" in secret_key:
-        return {"url": f"{settings.frontend_url}/checkout/success?demo=true", "demo": True}
+        return {"url": f"{frontend_url}/checkout/success?demo=true", "demo": True}
 
     stripe.api_key = secret_key
     stripe.api_version = "2026-02-25.clover"
 
     session = stripe.checkout.Session.create(
         mode="payment",
-        success_url=f"{settings.frontend_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
-        cancel_url=f"{settings.frontend_url}/checkout/cancel",
+        success_url=f"{frontend_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
+        cancel_url=f"{frontend_url}/checkout/cancel",
         line_items=[
             {
                 "quantity": item.quantity,
