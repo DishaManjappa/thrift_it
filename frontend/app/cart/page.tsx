@@ -19,12 +19,19 @@ export default function CartPage() {
     setIsCheckingOut(true);
 
     try {
+      const checkoutItems = items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        quantity: item.quantity
+      }));
+
       writeJson(storageKeys.pendingCheckout, {
-        items,
+        items: checkoutItems,
         total: subtotal,
         createdAt: new Date().toISOString()
       });
-      const session = await createCheckoutSession(items.map((item) => ({ title: item.title, price: item.price, quantity: item.quantity })));
+      const session = await createCheckoutSession(checkoutItems.map((item) => ({ title: item.title, price: item.price, quantity: item.quantity })));
       window.location.assign(session.url);
     } catch (error) {
       setCheckoutError(error instanceof Error ? error.message : "Stripe checkout could not be started.");
