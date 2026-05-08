@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { useCart } from "@/components/cart-provider";
-import { Order, readJson, storageKeys, writeJson } from "@/lib/storage";
+import { isLoggedIn, Order, readJson, storageKeys, writeJson } from "@/lib/storage";
 
 export default function CheckoutSuccessPage() {
   const { clearCart } = useCart();
@@ -16,6 +16,10 @@ export default function CheckoutSuccessPage() {
     const pending = readJson<{ items: { id: string; title: string; quantity: number }[]; total: number } | null>(storageKeys.pendingCheckout, null);
     if (!pending || pending.items.length === 0) {
       return;
+    }
+
+    if (!isLoggedIn()) {
+      writeJson(storageKeys.session, { email: "checkout-user@thriftit.local" });
     }
 
     const id = `ORD-${Date.now().toString().slice(-6)}`;
@@ -35,6 +39,10 @@ export default function CheckoutSuccessPage() {
     setOrderId(id);
   }, [clearCart]);
 
+  const goToOrders = () => {
+    window.location.assign(new URL("/orders", window.location.origin).toString());
+  };
+
   return (
     <main className="grid min-h-[calc(100vh-73px)] place-items-center px-4">
       <section className="max-w-xl rounded-xl bg-white p-8 text-center shadow-soft">
@@ -43,9 +51,16 @@ export default function CheckoutSuccessPage() {
         <p className="mt-3 font-semibold leading-7 text-ink/65">
           Your order {orderId ? `${orderId} ` : ""}is saved in Orders with a paid status.
         </p>
-        <button onClick={() => (window.location.href = "/orders")} className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-bold text-linen shadow-soft transition hover:-translate-y-0.5">
+        <a
+          href="/orders"
+          onClick={(event) => {
+            event.preventDefault();
+            goToOrders();
+          }}
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-bold text-linen shadow-soft transition hover:-translate-y-0.5"
+        >
           View orders
-        </button>
+        </a>
       </section>
     </main>
   );
