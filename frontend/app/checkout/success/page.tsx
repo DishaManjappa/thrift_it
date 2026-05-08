@@ -27,6 +27,7 @@ export default function CheckoutSuccessPage() {
     const newSoldIds = pending.items.map((item) => item.id);
     writeJson(storageKeys.orders, [paidOrder, ...current]);
     writeJson(storageKeys.sold, Array.from(new Set([...soldIds, ...newSoldIds])));
+    writeJson(storageKeys.cart, []);
     window.localStorage.removeItem(storageKeys.pendingCheckout);
     clearCart();
     setOrderId(id);

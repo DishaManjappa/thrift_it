@@ -4,22 +4,29 @@ import { Loader2, Trash2 } from "lucide-react";
 import { createCheckoutSession } from "@/lib/api";
 import { useCart } from "@/components/cart-provider";
 import { Button } from "@/components/ui/button";
-import { storageKeys, writeJson } from "@/lib/storage";
-import { useState } from "react";
+import { readJson, storageKeys, writeJson } from "@/lib/storage";
+import { useEffect, useMemo, useState } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 
 export default function CartPage() {
-  const { items, removeItem, subtotal } = useCart();
+  const { items, removeItem } = useCart();
+  const [soldIds, setSoldIds] = useState<string[]>([]);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const visibleItems = useMemo(() => items.filter((item) => !soldIds.includes(item.id)), [items, soldIds]);
+  const subtotal = useMemo(() => visibleItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [visibleItems]);
+
+  useEffect(() => {
+    setSoldIds(readJson<string[]>(storageKeys.sold, []));
+  }, []);
 
   const checkout = async () => {
-    if (!items.length || isCheckingOut) return;
+    if (!visibleItems.length || isCheckingOut) return;
     setCheckoutError("");
     setIsCheckingOut(true);
 
     try {
-      const checkoutItems = items.map((item) => ({
+      const checkoutItems = visibleItems.map((item) => ({
         id: item.id,
         title: item.title,
         price: item.price,
@@ -45,7 +52,7 @@ export default function CartPage() {
       <h1 className="text-5xl font-black tracking-tight">Your cart</h1>
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_22rem]">
         <section className="space-y-4">
-          {items.length === 0 && (
+          {visibleItems.length === 0 && (
             <div className="rounded-xl bg-white p-8 text-center shadow-soft">
               <p className="text-xl font-black">Your cart is waiting for a find.</p>
               <Button href="/marketplace" className="mt-5">
@@ -53,7 +60,7 @@ export default function CartPage() {
               </Button>
             </div>
           )}
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <article key={item.id} className="flex gap-4 rounded-xl bg-white p-4 shadow-soft">
               <img src={item.image} alt={item.title} className="h-28 w-24 rounded-xl object-cover" />
               <div className="flex flex-1 flex-col justify-between">
@@ -72,7 +79,7 @@ export default function CartPage() {
         <aside className="h-fit rounded-xl bg-ink p-6 text-linen shadow-soft">
           <p className="text-sm font-black uppercase text-clay">Subtotal</p>
           <p className="mt-2 text-4xl font-black">${subtotal}</p>
-          <button disabled={!items.length || isCheckingOut} onClick={checkout} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linen px-5 py-4 font-black text-ink transition hover:-translate-y-0.5 disabled:opacity-50">
+          <button disabled={!visibleItems.length || isCheckingOut} onClick={checkout} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linen px-5 py-4 font-black text-ink transition hover:-translate-y-0.5 disabled:opacity-50">
             {isCheckingOut && <Loader2 className="animate-spin" size={18} />}
             {isCheckingOut ? "Redirecting to Stripe..." : "Checkout with Stripe"}
           </button>

@@ -41,7 +41,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeItem = (id: string) => setItems((current) => current.filter((item) => item.id !== id));
-  const clearCart = () => setItems([]);
+  const clearCart = () => {
+    writeJson(storageKeys.cart, []);
+    setItems([]);
+  };
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
 
